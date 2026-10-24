@@ -1,4 +1,4 @@
-<img width="468" height="29" alt="image" src="https://github.com/user-attachments/assets/4945951f-833b-4452-a635-f709a1a8f31b" />All done on 7-8/9/26
+All done on 7-8/9/26
 
 #Setting up the Pi
 
@@ -316,3 +316,21 @@ rm ~/'udo ss -tnp | grep pivr'
 ```
 
 This deleted a stray file that I had created by mis-typing a > in terminal
+
+#Reboot test
+
+```bash
+sudo reboot
+```
+
+Then jointed FredPi wifi on the mac, then in terminal:
+
+```bash
+ssh fred@10.42.0.1
+
+grep vitaldb/etc/hosts
+
+systemctl status vitalrecorder
+```
+
+It showed vitalrecorder was running and the block line was still working.
