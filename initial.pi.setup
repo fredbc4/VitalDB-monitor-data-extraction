@@ -3,9 +3,9 @@ Loaded SD card in imager on my mac- Raspberry Pi 64 bit with desktop. Called Fre
 Version 6.18.39 (June 2026 image, updated on first boot)
 I wrote my home wifi SSID and password into the SD card so it connected automatically on first boot.
 Over my home wifi:
-'''bash
+```bash
 ping -c 3 fredpi1.local
-'''
+```
 to confirm the Pi was connected
   ssh fred@fredpi1.local
 typed in password and then worked remotely on Pi
