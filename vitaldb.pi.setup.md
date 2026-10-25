@@ -1,6 +1,6 @@
 # Home setup done on 7-8/9/26
 
-# Setting up the Pi
+## Setting up the Pi
 
 Loaded SD card in imager on my mac- Raspberry Pi 64 bit with desktop. Named it FredPi1.
 
@@ -41,7 +41,7 @@ Checks the VNC server is running ("active (running)").
 
 Then worked within the VNC window using the Pi's own browser
 
-# Installing VitalDB
+## Installing VitalDB
 
 Downloaded pivr64_1.19.27 (Raspberry Pi 64-bit build) from vitaldb.net
 
@@ -69,7 +69,7 @@ This reports what kind of file it is (it's an ARM 64-bit programme)
 ~/Downloads/pivr64_1.19.27
 ```
 
-This ran VitalDB. N.b. it fialed to run with the error message: libwiringPi.so: cannot open shared object file, so I had to download WiringPi first
+This ran Vital recorder. N.b. it fialed to run with the error message: libwiringPi.so: cannot open shared object file, so I had to download WiringPi first
 
 ```bash
 cd ~/Downloads
@@ -93,11 +93,11 @@ This installs WiringPi, and tells apt it's a local file
 ~/Downloads/pivr64_1.19.27
 ```
 
-Ran VitalDB again and now it worked!
+Ran Vital Recorder again and now it worked!
 
-Then looked in terminal window, and could see VitalDB status lines ("uploading done" then CPU/RAM usage), until updates stopped with Ctrl-C
+Then looked in terminal window, and could see Vital recorder status lines ("uploading done" then CPU/RAM usage), until updates stopped with Ctrl-C
 
-# Configuring VitalDB
+## Configuring Vital Recorder
 
 ```bash
 cat ~/Downloads/vr.conf
@@ -130,7 +130,7 @@ Which searches for any .vital file. A recording was found, proving it records lo
 ~/Downloads/pivr64_1.19.27
 ```
 
-This ran VitalDB again. Now it kept printing "opening USB0 / opening /dev/ttyUSB0 repeatedly which showed that the device was accepted, and it kept trying to open a serial adapter that wasn't plugged in.
+This ran Vital Recorder again. Now it kept printing "opening USB0 / opening /dev/ttyUSB0 repeatedly which showed that the device was accepted, and it kept trying to open a serial adapter that wasn't plugged in.
 
 3) Added "SERVER_IP=127.0.0.1" under the "[BED/...]" header. The Pi is set up to stream data over the internet. Even though we planned to run it offline, in case it was inadvertently connected to internet, we wanted to disable this feature. However the build ignores the server IP; it was still trying to stream to a different address. See how this was resolved later in the log.
 
@@ -143,7 +143,7 @@ journalctl -u vitalrecorder -n 40
 
 This is how we saw that the Pi is able to handshake with the VitalDB sever online.
 
-# Exporting recordings to the Mac
+## Exporting recordings to the Mac
 
 ```bash
 scp "fred@fredpi1.local:recordings/*.vital" ~/Desktop/
@@ -151,45 +151,36 @@ scp "fred@fredpi1.local:recordings/*.vital" ~/Desktop/
 
 scp copies files over ssh. Source is the Pi's recording folder, destination is the Mac desktop. I then opened the file in VitalRecorder on my Mac and opened (with the Demo device invented signals).
 
-# Set up autostart
+## Set up autostart
 
 ```bash
 sudo tee /etc/systemd/system/vitalrecorder.service > /dev/null <<'EOF'
 
 [Unit]
-
 Description=Vital Recorder
-
 After=network.target
 
 [Service]
-
 User=fred
-
 WorkingDirectory=/home/fred/Downloads
-
 ExecStart=/home/fred/Downloads/pivr64_1.19.27
-
 Restart=always
-
 RestartSec=5
 
 [Install]
-
 WantedBy=multi-user.target
-
 EOF
 ```
 This sets up commands to make the Pi run the program as user Fred 5 seconds after any crash, and start it at boot once networking is up. .tee writes what it receives toa. file, > /dev/null stops it echoing.
 
-'''bash
+```bash
 sudo systemctl daemon-reload
 ```
 
 This makes systemd re-read its service files to it notices the new one just written above.
 
 ```bash
-sudo systemctl daemon-reload
+sudo systemctl enable --now vitalrecorder
 ```
 
 enable means start at every boot, --now means also start it immediately
@@ -200,7 +191,7 @@ systemctl status vitalrecorder
 
 This shows whether vitalrecorder is running, and it's last few log lines. From this point on, Vital Recorder is always running in the background.
 
-# Setting up the hotspot
+## Setting up the hotspot
 
 ```bash
 sudo nmcli device wifi hotspot ifname wlan0 ssid FredPi password "..."
@@ -233,7 +224,7 @@ sudo nmcli connection down Hotspot && sudo nmcli connection up "NAME"
 makes the hotspot turn off, and the pi rejoin my home wifi.
 
 ```bash
-ssh fred@fredpi.local
+ssh fred@fredpi1.local
 ```
 
 reconnected my mac to the pi over my home wifi
@@ -245,7 +236,7 @@ sudo reboot
 (Did this via my home wifi connection) and then the pi rebooted and make its hotspot automatically again.
 
 
-# Blocking upload to VitalDB
+## Blocking upload to VitalDB
 
 ```bash
 sudo nmcli connection down Hotspot && sudo nmcli connection up "NAME"
@@ -253,7 +244,7 @@ sudo nmcli connection down Hotspot && sudo nmcli connection up "NAME"
 then
 
 ```bash
-ssh fred@fredpi.local
+ssh fred@fredpi1.local
 ```
 
 Did the above 2 steps again to get the pi back onto the internet via my home wifi
@@ -301,23 +292,20 @@ When the Pi re-boots, the "etc/hosts" file is regenerated from local template. T
 
 ```bash
 sudo systemctl restart vitalrecorder
-
 sleep 20
-
 journalctl -u vitalrecorder -n 30 | grep -i -E "websocket|nginx|wss"
-
 sudo ss -tnp | grep pivr
 ```
 
-This restards the pi, then shows the output, filtering for the web connection. The result- 'wss connection error'- this verifies the block.
+This restarts vital recorder, then shows the output, filtering for the web connection. The result- 'wss connection error'- this verifies the block.
 
-'''bash
+```bash
 rm ~/'udo ss -tnp | grep pivr'
 ```
 
 This deleted a stray file that I had created by mis-typing a > in terminal
 
-#Reboot test
+## Reboot test
 
 ```bash
 sudo reboot
@@ -327,9 +315,7 @@ Then jointed FredPi wifi on the mac, then in terminal:
 
 ```bash
 ssh fred@10.42.0.1
-
-grep vitaldb/etc/hosts
-
+grep vitaldb /etc/hosts
 systemctl status vitalrecorder
 ```
 
@@ -343,7 +329,7 @@ Initially done with no patient in room, then a patient was connected, which was 
 
 Joined FredPi wifi on my mac, then used terminal:
 
-# Check time is correct
+## Check time is correct
 
 ```bash
 ssh -t fred@10.42.0.1 "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
@@ -369,15 +355,14 @@ ssh fred@10.42.0.1 date
 
 Asks the Pi what the time is, It showed Wed 9 Sep 10:42:25 BST, the correct time.
 
-# Check the Pi is running
+## Check the Pi is running
 
 ```bash
 ssh fred@10.42.0.1
-
 journalctl -u vitalrecorder -f
 ```
 
-This shows the live log. It showed "waiting for next patient", hourly-ish status lines (CPU 1%, temp 48degC) and the block VitalDB connection failing every minute as designed
+This shows the live log. It showed "waiting for next patient", minute-ly status lines (CPU 1%, temp 48degC) and the block Vital recorder connection failing every minute as designed
 
 ```bash
 Ctrl-C
@@ -387,7 +372,6 @@ Stops watching the live log
 
 ```bash
 journalctl -u vitalrecorder -n 300 | grep -v -E "cpu|ram|websocket|wss"
-
 ls -l ~/recordings
 ```
 
@@ -405,19 +389,19 @@ This shows the last 300 log lines with routine noies removed (grep -v means show
 
 So we knew the pi worked
 
-# Checking exported files are valid
+## Checking exported files are valid
 
 On the mac, in terminal:
 
 ```bash
-scp "fred@10.42.0.1:recordings/2e723487_260909_104205.vital" ~/Desktop/
+scp "fred@10.42.0.1:recordings/........_260909_104205.vital" ~/Desktop/
 ```
 
 This exports the new, correctly-timed file to Mac. I could then open the file in Vital Recorder on mac and view it.
 
 # First 'check-up' and clock install 14/9/26
 
-# Exporting files 
+## Exporting files 
 
 ```bash
 ssh fred@10.42.0.1 date
@@ -429,7 +413,6 @@ On mac in terminal
 
 ```bash
 mkdir -p ~/Desktop/vital_files
-
 scp "fred@10.42.0.1:recordings/*.vital" ~/Desktop/vital_files/
 ```
 
@@ -437,7 +420,7 @@ mkdir -; makes a folder. scp copies every .vital file from the pi into it.
 
 Opened up these files in VitalRecorder on the mac and they work. n.b. I did not delete off the Pi at this point.
 
-# Installing the clock
+## Installing the clock
 
 Bought a DS3231 "Mini RTC Module" from PiShop
 
@@ -445,11 +428,8 @@ Shut down Pi and unplugged. Fitted the module on the first 5 mins of the outer G
 
 ```bash
 sudo raspi-config nonint do_i2c 0
-
 echo "dtoverlay=i2c-rtc,ds3231" | sudo tee -a /boot/firmware/config.txt
-
 sudo apt -y remove fake-hwclock
-
 sudo reboot
 ```
 
@@ -459,7 +439,6 @@ After reboot:
 
 ```bash
 ls /dev/rtc0
-
 dmesg | grep -i rtc
 ```
 
@@ -475,11 +454,8 @@ This didn't work because 'hwclock' tool isn't on this OS, and there was no wifi 
 
 ```bash
 sudo timedatectl set-ntp false
-
 sudo timedatectl set-time "$(date '+%Y-%m-%d %H:%M:%S')"
-
 sudo timedatectl set-ntp true
-
 timedatectl
 ```
 
@@ -493,7 +469,7 @@ ssh fred@10.42.0.1
 
 showed correct time, so it's working
 
-``bash
+```bash
 journalctl -u vitalrecorder -f
 ```
 
@@ -527,6 +503,4 @@ sleep 20
 journalctl -u vitalrecorder -n 20
 ```
 
-ExecStart, which now runs the recorder inside a shell, merges its error output into its normal output (2>&1), and pipes that through grep -v "C: -1" (print every line that does not contain that text; --line-buffered makes it pass lines on immediately rather than in batches). Also removed the duplicate rate-limit lines. Result: clean startup log, no voltage lines. Log entries are now tagged sh[pid] instead of pivr64_1.19.27[pid] because the shell is the process systemd sees; journalctl -u vitalrecorder is unchanged.
-
-When recordings are opened on the mac, there is no spurious flat-line track, so I think this workaround did not leave in a random track on the vitaldb files from the clock.
+ExecStart, which now runs the recorder inside a shell, merges its error output into its normal output (2>&1), and pipes that through grep -v "C: -1" (print every line that does not contain that text; --line-buffered makes it pass lines on immediately rather than in batches). Also removed the duplicate rate-limit lines. Result: clean startup log, no voltage lines. Log entries are now tagged sh[pid] instead of pivr64_1.19.27[pid] because the shell is the process systemd sees; journalctl -u vitalrecorder is unchanged. This doesn't actualyl affect the .vital file, the grep filter just affects what reaches the log
