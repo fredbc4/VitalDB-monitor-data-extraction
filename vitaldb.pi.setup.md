@@ -79,7 +79,7 @@ This reports what kind of file it is (it's an ARM 64-bit programme)
 ~/Downloads/pivr64_1.19.27
 ```
 
-This ran Vital recorder. N.b. it fialed to run with the error message: libwiringPi.so: cannot open shared object file, so I had to download WiringPi first
+This ran Vital recorder. N.b. it failed to run with the error message: libwiringPi.so: cannot open shared object file, so I had to download WiringPi first
 
 ```bash
 cd ~/Downloads
@@ -124,7 +124,7 @@ This opens the file in the nano text editor. Ctrl-K cuts a line, Ctrl-O then Ent
 
 The following edits were made (in the nano text editor):
 
-1) Removed "skip=1" frmo the Demo service so it would record.
+1) Removed "skip=1" from the Demo service so it would record.
 
 Ran the programme for 2 mins then:
 
@@ -198,7 +198,7 @@ sudo nmcli device wifi hotspot ifname wlan0 ssid xxxPi password "..."
 
 nmcli controls NetworkManager, the Pi's networking. This tells the Wi-Fi chip (wlan0) to stop being a client and become an access point broadcasting the network "xxxPi" with the given password. The Pi immediately leaves the home Wi-Fi, so the ssh session freezes. (One attempt failed with a ? accidentally at the start of the line, and one with a missing closing quote, which left the shell waiting with a > prompt; Ctrl-C cancels that.)
 
-Jointed wifi 'xxxPi' on my Mac, then in terminal:
+Joined wifi 'xxxPi' on my Mac, then in terminal:
 
 ```bash
 ssh fred@10.42.0.1
@@ -374,7 +374,7 @@ journalctl -u vitalrecorder -n 300 | grep -v -E "cpu|ram|websocket|wss"
 ls -l ~/recordings
 ```
 
-This shows the last 300 log lines with routine noies removed (grep -v means show lines that do not match those 4 terms) The output:
+This shows the last 300 log lines with routine noises removed (grep -v means show lines that do not match those 4 terms) The output:
 
 - opening USB0 repeated for ~6 seconds after boot, then hardware handshake and  [......../Bx50] reading thread started (sport = USB0, sock=-1) -ie the serial port opened and the recorder began reading the monitor
 
@@ -415,7 +415,7 @@ mkdir -p ~/Desktop/vital_files
 scp "fred@10.42.0.1:recordings/*.vital" ~/Desktop/vital_files/
 ```
 
-mkdir -; makes a folder. scp copies every .vital file from the pi into it. 
+mkdir -p makes a folder. scp copies every .vital file from the pi into it. 
 
 Opened up these files in VitalRecorder on the mac and they work. n.b. I did not delete off the Pi at this point.
 
@@ -432,7 +432,7 @@ sudo apt -y remove fake-hwclock
 sudo reboot
 ```
 
-Line 1 turns on the I2C bus (nonint = non-interactvive, 0 = enable) that the clock chip talks over. Line 2 appends a line to the boot config telling the Pi it's there. Line 3 removes the old 'fake clock' that just takes the time before cutout as time on reboot. Line 4 reboots the pi.
+Line 1 turns on the I2C bus (nonint = non-interactive, 0 = enable) that the clock chip talks over. Line 2 appends a line to the boot config telling the Pi it's there. Line 3 removes the old 'fake clock' that just takes the time before cutout as time on reboot. Line 4 reboots the pi.
 
 After reboot:
 
@@ -502,7 +502,7 @@ sleep 20
 journalctl -u vitalrecorder -n 20
 ```
 
-ExecStart, which now runs the recorder inside a shell, merges its error output into its normal output (2>&1), and pipes that through grep -v "C: -1" (print every line that does not contain that text; --line-buffered makes it pass lines on immediately rather than in batches). Also removed the duplicate rate-limit lines. Result: clean startup log, no voltage lines. Log entries are now tagged sh[pid] instead of pivr64_1.19.27[pid] because the shell is the process systemd sees; journalctl -u vitalrecorder is unchanged. This doesn't actualyl affect the .vital file, the grep filter just affects what reaches the log
+ExecStart, which now runs the recorder inside a shell, merges its error output into its normal output (2>&1), and pipes that through grep -v "C: -1" (print every line that does not contain that text; --line-buffered makes it pass lines on immediately rather than in batches). Also removed the duplicate rate-limit lines. Result: clean startup log, no voltage lines. Log entries are now tagged sh[pid] instead of pivr64_1.19.27[pid] because the shell is the process systemd sees; journalctl -u vitalrecorder is unchanged. This doesn't actually affect the .vital file, the grep filter just affects what reaches the log
 
 # 18 September changed passwords to more secure ones, and exported more files then deleted them off the Pi
 
