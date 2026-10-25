@@ -576,5 +576,10 @@ Doing this at the start of each session will give a log of the entire terminal c
 
 ## how to reverse our block on the Vital recorder vital db server streaming
 
+```bash
+sudo sed -i '/vitaldb.net/d' /etc/hosts
+sudo sed -i '/vitaldb.net/d' /etc/cloud/templates/hosts.debian.tmpl
+sudo systemctl restart vitalrecorder
+```
 
-
+This would allow mean vital recorder would connect to the vitaldb server if connected to wifi
