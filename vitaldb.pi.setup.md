@@ -41,7 +41,7 @@ Checks the VNC server is running ("active (running)").
 
 Then worked within the VNC window using the Pi's own browser
 
-## Installing VitalDB
+## Installing Vital Recorder
 
 Downloaded pivr64_1.19.27 (Raspberry Pi 64-bit build) from vitaldb.net
 
@@ -124,15 +124,13 @@ find ~ -name "*.vital"
 
 Which searches for any .vital file. A recording was found, proving it records locally.
 
-2) Changed "type=Demo" to "type=Bx50" as this was the monitor to be used. Added "port=USB0", renamed the header to "[DEV/B450]"
+2) Changed "type=Demo" to "type=Bx50" as this was the monitor to be used. Added "port=USB0", renamed the header to "[DEV/B450]" n.b. this name is actually incorrect because the Pi is plugged into a B650- i have mislabelled it.
 
 ```bash
 ~/Downloads/pivr64_1.19.27
 ```
 
 This ran Vital Recorder again. Now it kept printing "opening USB0 / opening /dev/ttyUSB0 repeatedly which showed that the device was accepted, and it kept trying to open a serial adapter that wasn't plugged in.
-
-3) Added "SERVER_IP=127.0.0.1" under the "[BED/...]" header. The Pi is set up to stream data over the internet. Even though we planned to run it offline, in case it was inadvertently connected to internet, we wanted to disable this feature. However the build ignores the server IP; it was still trying to stream to a different address. See how this was resolved later in the log.
 
 
 ```bash
@@ -171,7 +169,7 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 ```
-This sets up commands to make the Pi run the program as user Fred 5 seconds after any crash, and start it at boot once networking is up. .tee writes what it receives toa. file, > /dev/null stops it echoing.
+This sets up commands to make the Pi run the program as user fred 5 seconds after any exit, and start it at boot once networking is up. .tee writes what it receives toa. file, > /dev/null stops it echoing.
 
 ```bash
 sudo systemctl daemon-reload
@@ -297,7 +295,7 @@ journalctl -u vitalrecorder -n 30 | grep -i -E "websocket|nginx|wss"
 sudo ss -tnp | grep pivr
 ```
 
-This restarts vital recorder, then shows the output, filtering for the web connection. The result- 'wss connection error'- this verifies the block.
+This restarts vital recorder, then shows the output, filtering for the web connection. The result- 'wss connect error'- this verifies the block.
 
 ```bash
 rm ~/'udo ss -tnp | grep pivr'
@@ -450,7 +448,7 @@ Now need to push the correct time from the mac
 ssh -t fred@10.42.0.1 "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
 ```
 
-This didn't work because 'hwclock' tool isn't on this OS, and there was no wifi to install with, so we used this workaround on the Pi:
+This sets the pi's own clock to be correct:
 
 ```bash
 sudo timedatectl set-ntp false
@@ -459,7 +457,7 @@ sudo timedatectl set-ntp true
 timedatectl
 ```
 
-set-time refuses to work while automatic sync is on, hence line 1. Line 2 sets the system time to what it already is (now correct), which as a side effect writes it into the clock chip. Line 3 turns automatic sync back on. Line 4 prints a status summary whose "RTC time" line should now be today.
+This sets up the RTC chip clock. set-time refuses to work while automatic sync is on, hence line 1. Line 2 sets the system time to what it already is (now correct), which as a side effect writes it into the clock chip. Line 3 turns automatic sync back on. Line 4 prints a status summary whose "RTC time" line should now be today.
 
 Then tested by unplugging the Pi from power, plugging back in, then 
 
