@@ -562,3 +562,19 @@ history -c && rm -f ~/.bash_history
 ```
 
 This clears the history on terminal, because the wifi password was written down as a line in terminal
+
+# Things I didn't do that are useful
+
+## script the terminal log and save it (including the pi's responses)
+
+```bash
+mkdir -p ~/pi-logs
+script ~/pi-logs/$(date +%Y-%m-%d-%H%M).log
+```
+
+Doing this at the start of each session will give a log of the entire terminal conversation (both commands and pi responses)
+
+## how to reverse our block on the Vital recorder vital db server streaming
+
+
+
