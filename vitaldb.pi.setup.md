@@ -12,19 +12,19 @@ Loaded SD card in imager on my mac- Raspberry Pi 64 bit with desktop.
 
 Downloaded Raspberry Pi OS (64-bit desktop) Version 6.18.34 (June 2026 image, updated on first boot tp Version 6.18.39)
 
-Customisation: Named it FredPi1, username fred, password was set, home Wifi and password, Wirelass LAN country GB, timezone London, services tab- Enable SSH with password authentication.
+Customisation: Named it xxxPi1, username fred, password was set, home Wifi and password, Wirelass LAN country GB, timezone London, services tab- Enable SSH with password authentication.
 
 Inserted SD card into Pi and powered up, First attempt, it failed to join Wi-Fi (most like a typo I made in customisation). So I re-wrote SD card in imager and tried again:
 
 Over my home wifi:
 
 ```bash
-ping -c 3 fredpi1.local
+ping -c 3 xxxPi1.local
 ```
 to confirm the Pi was connected
 
 ```bash
-  ssh fred@fredpi1.local
+  ssh fred@xxxPi1.local
 ```
 
 typed in password and then worked remotely on Pi
@@ -134,7 +134,7 @@ find ~ -name "*.vital"
 
 Which searches for any .vital file. A recording was found, proving it records locally.
 
-2) Changed "type=Demo" to "type=B450" as this was the monitor to be used. Added "port=USB0", renamed the header to "[DEV/B450]" n.b. this name is actually incorrect because the Pi is plugged into a B650- i have mislabelled it.
+2) Changed "type=Demo" to "type=Bx50" as this was the monitor to be used. Added "port=USB0", renamed the header to "[DEV/B450]" n.b. this name is actually incorrect because the Pi is plugged into a B650- i have mislabelled it.
 
 ```bash
 ~/Downloads/pivr64_1.19.27
@@ -145,7 +145,7 @@ This ran Vital Recorder again. Now it kept printing "opening USB0 / opening /dev
 ## Exporting recordings to the Mac
 
 ```bash
-scp "fred@fredpi1.local:recordings/*.vital" ~/Desktop/
+scp "fred@xxxPi1.local:recordings/*.vital" ~/Desktop/
 ```
 
 scp copies files over ssh. Source is the Pi's recording folder, destination is the Mac desktop. I then opened the file in VitalRecorder on my Mac and opened (with the Demo device invented signals).
@@ -193,12 +193,12 @@ This shows whether vitalrecorder is running, and it's last few log lines. From t
 ## Setting up the hotspot
 
 ```bash
-sudo nmcli device wifi hotspot ifname wlan0 ssid FredPi password "..."
+sudo nmcli device wifi hotspot ifname wlan0 ssid xxxPi password "..."
 ```
 
-nmcli controls NetworkManager, the Pi's networking. This tells the Wi-Fi chip (wlan0) to stop being a client and become an access point broadcasting the network "FredPi" with the given password. The Pi immediately leaves the home Wi-Fi, so the ssh session freezes. (One attempt failed with a ? accidentally at the start of the line, and one with a missing closing quote, which left the shell waiting with a > prompt; Ctrl-C cancels that.)
+nmcli controls NetworkManager, the Pi's networking. This tells the Wi-Fi chip (wlan0) to stop being a client and become an access point broadcasting the network "xxxPi" with the given password. The Pi immediately leaves the home Wi-Fi, so the ssh session freezes. (One attempt failed with a ? accidentally at the start of the line, and one with a missing closing quote, which left the shell waiting with a > prompt; Ctrl-C cancels that.)
 
-Jointed wifi 'FredPi' on my Mac, then in terminal:
+Jointed wifi 'xxxPi' on my Mac, then in terminal:
 
 ```bash
 ssh fred@10.42.0.1
@@ -223,7 +223,7 @@ sudo nmcli connection down Hotspot && sudo nmcli connection up "NAME"
 makes the hotspot turn off, and the pi rejoin my home wifi.
 
 ```bash
-ssh fred@fredpi1.local
+ssh fred@xxxPi1.local
 ```
 
 reconnected my mac to the pi over my home wifi
@@ -243,7 +243,7 @@ sudo nmcli connection down Hotspot && sudo nmcli connection up "NAME"
 then
 
 ```bash
-ssh fred@fredpi1.local
+ssh fred@xxxPi1.local
 ```
 
 Did the above 2 steps again to get the pi back onto the internet via my home wifi
@@ -255,7 +255,7 @@ sleep 15
 journalctl -u vitalrecorder -n 40
 ```
 
-Here we're testing if the Pi is able to 'handshake' with the vitaldb server online (which we don't want). The output we got was The log showed connecting websocket server, then Server => nginx/1.28.3, Connection => upgrade, Upgrade => websocket and a Sec-WebSocket-Accept line. That’s a completed handshake with VitalDB’s server. So we learned that just altering the server ip for the specific bed didn't work.
+Here we're testing if the Pi is able to 'handshake' with the vitaldb server online (which we don't want). The output we got was The log showed connecting websocket server, then Server => nginx/1.28.3, Connection => upgrade, Upgrade => websocket and a Sec-WebSocket-Accept line. That’s a completed handshake with VitalDB’s server.
 
 ```bash
 sudo ss -tnp | grep pivr
@@ -287,7 +287,7 @@ So we have made a local override to stop data being exported, however it will ge
 echo "127.0.0.1 vitaldb.net mod.vitaldb.net filter.vitaldb.net" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
 ```
 
-When the Pi re-boots, the "etc/hosts" file is regenerated from local template. This command pipes the loopback address in so that it will stay whenever the Pi reboots. The template is needed because one SD card image gets written to thousands of Pis, each with a different name, so the image can't ship a finished /etc/hosts. It ships a template with a blank where the hostname goes, and each Pi fills in its own — FredPi1 in my case — at first boot. It redoes this at every boot, which is why a change made only to /etc/hosts disappears.
+When the Pi re-boots, the "etc/hosts" file is regenerated from local template. This command pipes the loopback address in so that it will stay whenever the Pi reboots. The template is needed because one SD card image gets written to thousands of Pis, each with a different name, so the image can't ship a finished /etc/hosts. It ships a template with a blank where the hostname goes, and each Pi fills in its own — xxxPi1 in my case — at first boot. It redoes this at every boot, which is why a change made only to /etc/hosts disappears.
 
 ```bash
 sudo systemctl restart vitalrecorder
@@ -310,7 +310,7 @@ This deleted a stray file that I had created by mis-typing a > in terminal
 sudo reboot
 ```
 
-Then jointed FredPi wifi on the mac, then in terminal:
+Then jointed xxxPi wifi on the mac, then in terminal:
 
 ```bash
 ssh fred@10.42.0.1
@@ -326,7 +326,7 @@ Connected Pi to GE B650 monitor. USB monitor port USB-UC232A adapter cable (used
 
 Initially done with no patient in room, then a patient was connected, which was actually useful to test the Pi.
 
-Joined FredPi wifi on my mac, then used terminal:
+Joined xxxPi wifi on my mac, then used terminal:
 
 ## Check time is correct
 
@@ -472,7 +472,7 @@ showed correct time, so it's working
 journalctl -u vitalrecorder -f
 ```
 
-Checking vital recorder's still working, and we saw repeated lines of "C: -1, V: -0.000 V" 10x a second. This is because VitalRecorder carries an analogue to digital converter on the I2C, where we installed the clock.
+Checking vital recorder's still working, and we saw repeated lines of "C: -1, V: -0.000 V" 10x a second. This is because VitalRecorder expects an analogue to digital converter on the I2C, where we installed the clock.
 
 ```bash
 sudo sed -i '/^\[Service\]/a LogRateLimitIntervalSec=30s\nLogRateLimitBurst=100' /etc/systemd/system/vitalrecorder.service
@@ -514,7 +514,7 @@ journalctl -u vitalrecorder -f
 
 checked pi was working. The monitor was turned off, so I got "reading_thread finished" then "reopeing USB0" about every 30 seconds
 
-``bash
+```bash
 mkdir -p ~/Desktop/vital_files
 scp "fred@10.42.0.1:recordings/*.vital" ~/Desktop/vital_files/
 ```
@@ -522,6 +522,7 @@ scp "fred@10.42.0.1:recordings/*.vital" ~/Desktop/vital_files/
 This exported the files. N.b. I had a typo in my first attempt, above code is the correct one. I then opened 2 recordings on the mac to ensure they were genuine.
 
 ```bash
+ssh fred@10.42.0.1
 ls -l ~/recordings
 rm ~/recordings/*.vital
 ls -l ~/recordings
