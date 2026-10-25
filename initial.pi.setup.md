@@ -1,6 +1,6 @@
-All done on 7-8/9/26
+# Home setup done on 7-8/9/26
 
-#Setting up the Pi
+# Setting up the Pi
 
 Loaded SD card in imager on my mac- Raspberry Pi 64 bit with desktop. Named it FredPi1.
 
@@ -41,7 +41,7 @@ Checks the VNC server is running ("active (running)").
 
 Then worked within the VNC window using the Pi's own browser
 
-#Installing VitalDB
+# Installing VitalDB
 
 Downloaded pivr64_1.19.27 (Raspberry Pi 64-bit build) from vitaldb.net
 
@@ -97,7 +97,7 @@ Ran VitalDB again and now it worked!
 
 Then looked in terminal window, and could see VitalDB status lines ("uploading done" then CPU/RAM usage), until updates stopped with Ctrl-C
 
-#Configuring VitalDB
+# Configuring VitalDB
 
 ```bash
 cat ~/Downloads/vr.conf
@@ -334,3 +334,199 @@ systemctl status vitalrecorder
 ```
 
 It showed vitalrecorder was running and the block line was still working.
+
+# Theatre set up 9/9/26
+
+Connected Pi to GB B650 monitor via two UC232A cables and an F/F null modem adapter
+
+Initially done with no patient in room, then a patient was connected, which was actually useful to test the Pi.
+
+Joined FredPi wifi on my mac, then used terminal:
+
+# Check time is correct
+
+```bash
+ssh -t fred@10.42.0.1 "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
+```
+
+This was reading the time on the Pi (which was still on last night's time, when it was last plugged in. This code was attempting to set the date of the Pi to the date of the mac, but $(date -u... just reads the date of the Pis clock, so it didn't correct the time.
+
+```bash
+exit
+```
+
+Left the ssh so back onto the mac on the terminal
+
+```bash
+ssh -t fred@10.42.0.1 "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
+```
+
+Same command again from the mac now sets the time on the Pi.
+
+```bash
+ssh fred@10.42.0.1 date
+```
+
+Asks the Pi what the time is, It showed Wed 9 Sep 10:42:25 BST, the correct time.
+
+# Check the Pi is running
+
+```bash
+ssh fred@10.42.0.1
+
+journalctl -u vitalrecorder -f
+```
+
+This shows the live log. It showed "waiting for next patient", hourly-ish status lines (CPU 1%, temp 48degC) and the block VitalDB connection failing every minute as designed
+
+```bash
+Ctrl-C
+```
+
+Stops watching the live log
+
+```bash
+journalctl -u vitalrecorder -n 300 | grep -v -E "cpu|ram|websocket|wss"
+
+ls -l ~/recordings
+```
+
+This shows the last 300 log lines with routine noies removed (grep -v means show lines that do not match those 4 terms) The output:
+
+- opening USB0 repeated for ~6 seconds after boot, then hardware handshake and  [......../Bx50] reading thread started (sport = USB0, sock=-1) -ie the serial port opened and the recorder began reading the monitor
+
+- /........_260908_211942.vital is recording- ie a file is being written. n.b. the time and date is wrong because this recording was started prior to clock sync.
+
+- upload started ... failed: Could not connect to server ... upload error - the recorder tries to upload all finished .vital files to VitalDB every few minutes, but our block stops this.
+
+- At the moment of the time sync, the recorder closed the above file and opened a new one with correct timestamps
+
+- ls -l ~/recordings showed 3 files: the demo file (7 Sept), the wrong-time file and the new correctly-timed file that was still being recorded.
+
+So we knew the pi worked
+
+# Checking exported files are valid
+
+On the mac, in terminal:
+
+```bash
+scp "fred@10.42.0.1:recordings/2e723487_260909_104205.vital" ~/Desktop/
+```
+
+This exports the new, correctly-timed file to Mac. I could then open the file in Vital Recorder on mac and view it.
+
+# First 'check-up' and clock install 14/9/26
+
+# Exporting files 
+
+```bash
+ssh fred@10.42.0.1 date
+```
+
+Asks the Pi what the time, is confirmed time was correct. If someone had inadvertently unplugged the Pi, then plugged it back in before this point, then time would have become incorrect, but this had not happenned, so the files were correctly timed.
+
+On mac in terminal
+
+```bash
+mkdir -p ~/Desktop/vital_files
+
+scp "fred@10.42.0.1:recordings/*.vital" ~/Desktop/vital_files/
+```
+
+mkdir -; makes a folder. scp copies every .vital file from the pi into it. 
+
+Opened up these files in VitalRecorder on the mac and they work. n.b. I did not delete off the Pi at this point.
+
+# Installing the clock
+
+Bought a DS3231 "Mini RTC Module" from PiShop
+
+Shut down Pi and unplugged. Fitted the module on the first 5 mins of the outer GPIO. Powered on and ssh in.
+
+```bash
+sudo raspi-config nonint do_i2c 0
+
+echo "dtoverlay=i2c-rtc,ds3231" | sudo tee -a /boot/firmware/config.txt
+
+sudo apt -y remove fake-hwclock
+
+sudo reboot
+```
+
+Line 1 turns on the I2C bus (nonint = non-interactvive, 0 = enable) that the clock chip talks over. Line 2 appends a line to the boot config telling the Pi it's there. Line 3 removes the old 'fake clock' that just takes the time before cutout as time on reboot. Line 4 reboots the pi.
+
+After reboot:
+
+```bash
+ls /dev/rtc0
+
+dmesg | grep -i rtc
+```
+
+/dev/rtc0 existed, and the kernel log showed rtc-ds1307 1-0068: registered as rtc0 (the DS3231 uses the ds1307 driver, at I2C address 0x68) and setting system clock to 2000-01-01: the chip was found but unset, and the Pi had adopted its year-2000 time, which is the RTC taking authority as designed.
+
+Now need to push the correct time from the mac
+
+```bash
+ssh -t fred@10.42.0.1 "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
+```
+
+This didn't work because 'hwclock' tool isn't on this OS, and there was no wifi to install with, so we used this workaround on the Pi:
+
+```bash
+sudo timedatectl set-ntp false
+
+sudo timedatectl set-time "$(date '+%Y-%m-%d %H:%M:%S')"
+
+sudo timedatectl set-ntp true
+
+timedatectl
+```
+
+set-time refuses to work while automatic sync is on, hence line 1. Line 2 sets the system time to what it already is (now correct), which as a side effect writes it into the clock chip. Line 3 turns automatic sync back on. Line 4 prints a status summary whose "RTC time" line should now be today.
+
+Then tested by unplugging the Pi from power, plugging back in, then 
+
+```bash
+ssh fred@10.42.0.1
+```
+
+showed correct time, so it's working
+
+``bash
+journalctl -u vitalrecorder -f
+```
+
+Checking vital recorder's still working, and we saw repeated lines of "C: -1, V: -0.000 V" 10x a second. This is because VitalRecorder carries an analogue to digital converter on the I2C, where we installed the clock.
+
+```bash
+sudo sed -i '/^\[Service\]/a LogRateLimitIntervalSec=30s\nLogRateLimitBurst=100' /etc/systemd/system/vitalrecorder.service
+```
+
+We tried this way of limiting the rate of the recording from the I2C, but it didn't work, so we moved on to:
+
+```bash
+sudo tee /etc/systemd/system/vitalrecorder.service > /dev/null <<'EOF'
+[Unit]
+Description=Vital Recorder
+After=network.target
+
+[Service]
+User=fred
+WorkingDirectory=/home/fred/Downloads
+ExecStart=/bin/sh -c '/home/fred/Downloads/pivr64_1.19.27 2>&1 | grep --line-buffered -v "C: -1"'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart vitalrecorder
+sleep 20
+journalctl -u vitalrecorder -n 20
+```
+
+ExecStart, which now runs the recorder inside a shell, merges its error output into its normal output (2>&1), and pipes that through grep -v "C: -1" (print every line that does not contain that text; --line-buffered makes it pass lines on immediately rather than in batches). Also removed the duplicate rate-limit lines. Result: clean startup log, no voltage lines. Log entries are now tagged sh[pid] instead of pivr64_1.19.27[pid] because the shell is the process systemd sees; journalctl -u vitalrecorder is unchanged.
+
+When recordings are opened on the mac, there is no spurious flat-line track, so I think this workaround did not leave in a random track on the vitaldb files from the clock.
