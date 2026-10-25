@@ -12,7 +12,7 @@ Loaded SD card in imager on my mac- Raspberry Pi 64 bit with desktop.
 
 Downloaded Raspberry Pi OS (64-bit desktop) Version 6.18.34 (June 2026 image, updated on first boot tp Version 6.18.39)
 
-Customisation: Named it FredPi1, username fred, password was set, home Wifi and password, Wirelass LAN, country GB, timezone London, services tab- Enable SSH with password authentication.
+Customisation: Named it FredPi1, username fred, password was set, home Wifi and password, Wirelass LAN country GB, timezone London, services tab- Enable SSH with password authentication.
 
 Inserted SD card into Pi and powered up, First attempt, it failed to join Wi-Fi (most like a typo I made in customisation). So I re-wrote SD card in imager and tried again:
 
@@ -504,6 +504,61 @@ journalctl -u vitalrecorder -n 20
 
 ExecStart, which now runs the recorder inside a shell, merges its error output into its normal output (2>&1), and pipes that through grep -v "C: -1" (print every line that does not contain that text; --line-buffered makes it pass lines on immediately rather than in batches). Also removed the duplicate rate-limit lines. Result: clean startup log, no voltage lines. Log entries are now tagged sh[pid] instead of pivr64_1.19.27[pid] because the shell is the process systemd sees; journalctl -u vitalrecorder is unchanged. This doesn't actualyl affect the .vital file, the grep filter just affects what reaches the log
 
+# 18 September changed passwords to more secure ones, and exported more files then deleted them off the Pi
 
-##add how to delete files off the pi
+## Exported then deleted recordings
 
+```bash
+journalctl -u vitalrecorder -f
+```
+
+checked pi was working. The monitor was turned off, so I got "reading_thread finished" then "reopeing USB0" about every 30 seconds
+
+``bash
+mkdir -p ~/Desktop/vital_files
+scp "fred@10.42.0.1:recordings/*.vital" ~/Desktop/vital_files/
+```
+
+This exported the files. N.b. I had a typo in my first attempt, above code is the correct one. I then opened 2 recordings on the mac to ensure they were genuine.
+
+```bash
+ls -l ~/recordings
+rm ~/recordings/*.vital
+ls -l ~/recordings
+```
+
+First and last line show the files (last one showed a blank as it was empty. Middle one deletes recordings. 
+
+## Changed SSH and hotspot passwords so they were more secure
+
+When logged into the Pi via ssh
+
+```bash
+passwd
+```
+
+This prompts the current password to be entered, then the new one twice
+
+```bash
+sudo nmcli connection modify Hotspot wifi-sec.psk 'NewPasswordHere'
+```
+
+This is how you change the wifi password
+
+```bash
+sudo nmcli -s -g 802-11-wireless-security.psk connection show Hotspot
+```
+
+This prints the wifi password so you can check it is what you think it is
+
+```bash
+sudo nmcli connection up Hotspot
+```
+
+This applies the new password, so your connection drops, so you then have to re-login to the hotspot wifi on the mac with the new password
+
+```bash
+history -c && rm -f ~/.bash_history
+```
+
+This clears the history on terminal, because the wifi password was written down as a line in terminal
