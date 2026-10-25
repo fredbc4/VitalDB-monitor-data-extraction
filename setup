@@ -12,7 +12,7 @@ Loaded SD card in imager on my mac- Raspberry Pi 64 bit with desktop.
 
 Downloaded Raspberry Pi OS (64-bit desktop) Version 6.18.34 (June 2026 image, updated on first boot tp Version 6.18.39)
 
-Customisation: Named it xxxPi1, username fred, password was set, home Wifi and password, Wirelass LAN country GB, timezone London, services tab- Enable SSH with password authentication.
+Customisation: Named it xxxPi1, username and password were set, home Wifi and password, Wirelass LAN country GB, timezone London, services tab- Enable SSH with password authentication.
 
 Inserted SD card into Pi and powered up, First attempt, it failed to join Wi-Fi (most like a typo I made in customisation). So I re-wrote SD card in imager and tried again:
 
