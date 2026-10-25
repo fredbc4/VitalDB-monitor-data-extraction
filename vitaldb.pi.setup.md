@@ -1,12 +1,20 @@
+This document describes how I set up vital recorder on a Raspberry Pi and used it to record from a GE B650 monitor offline. Files can then be periodically extracted by SSH over it's hotspot.
+
 # Home setup done on 7-8/9/26
 
 ## Setting up the Pi
 
-Loaded SD card in imager on my mac- Raspberry Pi 64 bit with desktop. Named it FredPi1.
+Bought a Raspberry Pi 4 Model B 4GB starter pack from PiHut
 
-Version 6.18.39 (June 2026 image, updated on first boot)
+## Writing the SD card
 
-I wrote my home wifi SSID and password into the SD card so it connected automatically on first boot.
+Loaded SD card in imager on my mac- Raspberry Pi 64 bit with desktop. 
+
+Downloaded Raspberry Pi OS (64-bit desktop) Version 6.18.34 (June 2026 image, updated on first boot tp Version 6.18.39)
+
+Customisation: Named it FredPi1, username fred, password was set, home Wifi and password, Wirelass LAN, country GB, timezone London, services tab- Enable SSH with password authentication.
+
+Inserted SD card into Pi and powered up, First attempt, it failed to join Wi-Fi (most like a typo I made in customisation). So I re-wrote SD card in imager and tried again:
 
 Over my home wifi:
 
@@ -38,6 +46,8 @@ Opens the Pi's settings menu. Interface Options → VNC → Yes. Turns on the bu
 ```
 
 Checks the VNC server is running ("active (running)").
+
+Downloaded RealVNC viewer so I could connect to the Pi with VNC.
 
 Then worked within the VNC window using the Pi's own browser
 
@@ -124,22 +134,13 @@ find ~ -name "*.vital"
 
 Which searches for any .vital file. A recording was found, proving it records locally.
 
-2) Changed "type=Demo" to "type=Bx50" as this was the monitor to be used. Added "port=USB0", renamed the header to "[DEV/B450]" n.b. this name is actually incorrect because the Pi is plugged into a B650- i have mislabelled it.
+2) Changed "type=Demo" to "type=B450" as this was the monitor to be used. Added "port=USB0", renamed the header to "[DEV/B450]" n.b. this name is actually incorrect because the Pi is plugged into a B650- i have mislabelled it.
 
 ```bash
 ~/Downloads/pivr64_1.19.27
 ```
 
 This ran Vital Recorder again. Now it kept printing "opening USB0 / opening /dev/ttyUSB0 repeatedly which showed that the device was accepted, and it kept trying to open a serial adapter that wasn't plugged in.
-
-
-```bash
-sudo systemctl restart vitalrecorder
-sleep 15
-journalctl -u vitalrecorder -n 40
-```
-
-This is how we saw that the Pi is able to handshake with the VitalDB sever online.
 
 ## Exporting recordings to the Mac
 
@@ -280,7 +281,7 @@ echo "127.0.0.1 vitaldb.net mod.vitaldb.net filter.vitaldb.net" | sudo tee -a /e
 
 For the Pi to handshake the VitalDB server, it has to find the numeric address. It does this by consulting DNS, the Domain name system, the address book of the worldwide web. However, the pi first consults a local file "etc/hosts" before consulting the DNS, which functions as a local override. So we have 'overwritten' the address to 127.0.0.1, which is the loopback address to the pi itself
 
-So we have made a local override to stop data being exported, which can only be disabled by re-writing it out of the local "etc/hosts" file on the pi.
+So we have made a local override to stop data being exported, however it will get re-written during a reboot so:
 
 ```bash
 echo "127.0.0.1 vitaldb.net mod.vitaldb.net filter.vitaldb.net" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
@@ -321,7 +322,7 @@ It showed vitalrecorder was running and the block line was still working.
 
 # Theatre set up 9/9/26
 
-Connected Pi to GB B650 monitor via two UC232A cables and an F/F null modem adapter
+Connected Pi to GE B650 monitor. USB monitor port USB-UC232A adapter cable (used an ATEN with a serial code below Z3L1 so it's compatible with the monitor's installed driver), female to female null-modem, UC232A to USB adapter cable (brand and serial code don't matter) into the Pi's USB port.
 
 Initially done with no patient in room, then a patient was connected, which was actually useful to test the Pi.
 
@@ -502,3 +503,7 @@ journalctl -u vitalrecorder -n 20
 ```
 
 ExecStart, which now runs the recorder inside a shell, merges its error output into its normal output (2>&1), and pipes that through grep -v "C: -1" (print every line that does not contain that text; --line-buffered makes it pass lines on immediately rather than in batches). Also removed the duplicate rate-limit lines. Result: clean startup log, no voltage lines. Log entries are now tagged sh[pid] instead of pivr64_1.19.27[pid] because the shell is the process systemd sees; journalctl -u vitalrecorder is unchanged. This doesn't actualyl affect the .vital file, the grep filter just affects what reaches the log
+
+
+##add how to delete files off the pi
+
