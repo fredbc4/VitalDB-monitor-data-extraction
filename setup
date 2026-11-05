@@ -201,10 +201,10 @@ nmcli controls NetworkManager, the Pi's networking. This tells the Wi-Fi chip (w
 Joined wifi 'xxxPi' on my Mac, then in terminal:
 
 ```bash
-ssh fred@10.42.0.1
+ssh fred@xxxxxx
 ```
 
-N.b. the pi is always 10.42.0.1 on its own hotspot
+N.b. the pi is always xxxxxx on its own hotspot
 
 ```bash
 sudo nmcli connection modify Hotspot connection.autoconnect yes connection.autoconnect-priority 100
@@ -313,7 +313,7 @@ sudo reboot
 Then jointed xxxPi wifi on the mac, then in terminal:
 
 ```bash
-ssh fred@10.42.0.1
+ssh fred@xxxxxx
 grep vitaldb /etc/hosts
 systemctl status vitalrecorder
 ```
@@ -331,7 +331,7 @@ Joined xxxPi wifi on my mac, then used terminal:
 ## Check time is correct
 
 ```bash
-ssh -t fred@10.42.0.1 "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
+ssh -t fred@xxxxxx "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
 ```
 
 This was reading the time on the Pi (which was still on last night's time, when it was last plugged in. This code was attempting to set the date of the Pi to the date of the mac, but $(date -u... just reads the date of the Pis clock, so it didn't correct the time.
@@ -343,13 +343,13 @@ exit
 Left the ssh so back onto the mac on the terminal
 
 ```bash
-ssh -t fred@10.42.0.1 "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
+ssh -t fred@xxxxxx "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
 ```
 
 Same command again from the mac now sets the time on the Pi.
 
 ```bash
-ssh fred@10.42.0.1 date
+ssh fred@xxxxxx date
 ```
 
 Asks the Pi what the time is, It showed Wed 9 Sep 10:42:25 BST, the correct time.
@@ -357,7 +357,7 @@ Asks the Pi what the time is, It showed Wed 9 Sep 10:42:25 BST, the correct time
 ## Check the Pi is running
 
 ```bash
-ssh fred@10.42.0.1
+ssh fred@xxxxxx
 journalctl -u vitalrecorder -f
 ```
 
@@ -393,7 +393,7 @@ So we knew the pi worked
 On the mac, in terminal:
 
 ```bash
-scp "fred@10.42.0.1:recordings/........_260909_104205.vital" ~/Desktop/
+scp "fred@xxxxxx:recordings/........_260909_104205.vital" ~/Desktop/
 ```
 
 This exports the new, correctly-timed file to Mac. I could then open the file in Vital Recorder on mac and view it.
@@ -403,7 +403,7 @@ This exports the new, correctly-timed file to Mac. I could then open the file in
 ## Exporting files 
 
 ```bash
-ssh fred@10.42.0.1 date
+ssh fred@xxxxxx date
 ```
 
 Asks the Pi what the time, is confirmed time was correct. If someone had inadvertently unplugged the Pi, then plugged it back in before this point, then time would have become incorrect, but this had not happenned, so the files were correctly timed.
@@ -412,7 +412,7 @@ On mac in terminal
 
 ```bash
 mkdir -p ~/Desktop/vital_files
-scp "fred@10.42.0.1:recordings/*.vital" ~/Desktop/vital_files/
+scp "fred@xxxxxx:recordings/*.vital" ~/Desktop/vital_files/
 ```
 
 mkdir -p makes a folder. scp copies every .vital file from the pi into it. 
@@ -446,7 +446,7 @@ dmesg | grep -i rtc
 Now need to push the correct time from the mac
 
 ```bash
-ssh -t fred@10.42.0.1 "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
+ssh -t fred@xxxxxx "sudo date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'"
 ```
 
 This sets the pi's own clock to be correct:
@@ -463,7 +463,7 @@ This sets up the RTC chip clock. set-time refuses to work while automatic sync i
 Then tested by unplugging the Pi from power, plugging back in, then 
 
 ```bash
-ssh fred@10.42.0.1
+ssh fred@xxxxxx
 ```
 
 showed correct time, so it's working
@@ -516,13 +516,13 @@ checked pi was working. The monitor was turned off, so I got "reading_thread fin
 
 ```bash
 mkdir -p ~/Desktop/vital_files
-scp "fred@10.42.0.1:recordings/*.vital" ~/Desktop/vital_files/
+scp "fred@xxxxxx:recordings/*.vital" ~/Desktop/vital_files/
 ```
 
 This exported the files. N.b. I had a typo in my first attempt, above code is the correct one. I then opened 2 recordings on the mac to ensure they were genuine.
 
 ```bash
-ssh fred@10.42.0.1
+ssh fred@xxxxxx
 ls -l ~/recordings
 rm ~/recordings/*.vital
 ls -l ~/recordings
