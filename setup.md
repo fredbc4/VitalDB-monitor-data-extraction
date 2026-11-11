@@ -564,7 +564,7 @@ history -c && rm -f ~/.bash_history
 
 This clears the history on terminal, because the wifi password was written down as a line in terminal
 
-# I changed the name of the recorder, and corrected that it was a B650
+# Changed the name of the bed, and corrected that it was a B650 (5/11/26)
 
 ```bash
 ssh fred@xxxxxxx
@@ -600,3 +600,11 @@ sudo systemctl restart vitalrecorder
 ```
 
 This would allow mean vital recorder would connect to the vitaldb server if connected to wifi
+
+## record what I do in terminal so I can review it
+
+at the start of each session, write this:
+
+```bash
+script ~/Desktop/xxxx_2026-xx-xx.txt
+```
