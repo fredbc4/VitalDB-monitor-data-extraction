@@ -564,6 +564,22 @@ history -c && rm -f ~/.bash_history
 
 This clears the history on terminal, because the wifi password was written down as a line in terminal
 
+# I changed the name of the recorder, and corrected that it was a B650
+
+```bash
+ssh fred@xxxxxxx
+nano ~/Downloads/vr.conf
+```
+
+this opens up a tab of settings. I edited B450 to B650, and renamed the theatre (called bed in vitalrecorder) as xxxx. Then Ctrl-O to save and Ctrl-X to exit.
+
+```bash
+sudo systemctl restart vitalrecorder
+journalctl -u vitalrecorder -n 30
+```
+
+confirmed it had restarted and was working again
+
 # Things I didn't do that are useful
 
 ## script the terminal log and save it (including the pi's responses)
